@@ -1,1 +1,9 @@
-
+workbook: "data/source.xlsx"
+range: "Sheet1!D5:BE15"      # Excel A1 notation
+output_dir: "site"
+image_name: "latest.png"
+page_title: "Weekly Excel Snapshot"
+table_max_width_px: 1280
+cell_padding_px: 6
+font_family: "Inter, Arial, sans-serif"
+border_collapse: true
