@@ -1,109 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 <style>
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    background: #191919; 
-    color: #d4d4d4; 
-    padding: 12px; 
-    margin: 0; 
-    overflow-x: auto; /* Enables horizontal scroll */
+  /* Force smooth horizontal scrolling and prevent page clipping */
+  html, body {
+    background: #191919;
+    color: #d4d4d4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
-  
+
+  /* Lock the entire container to a fixed minimum width */
   .calendar-container {
-    /* Set a fixed minimum width so 52 blocks never shrink */
-    min-width: 800px; 
+    min-width: 920px;
+    width: max-content;
   }
 
-  .header-row {
+  .header-row, .quarter-row, .year-row {
     display: flex;
     align-items: center;
-    margin-bottom: 2px;
-  }
-  .month-grid {
-    display: grid;
-    grid-template-columns: repeat(52, 1fr);
-    gap: 3px;
-    flex-grow: 1;
-  }
-  .month-label {
-    font-size: 10px;
-    color: #787774;
-    text-align: left;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
+    margin-bottom: 4px;
   }
 
-  /* Quarter Accent Line Row */
-  .quarter-row {
-    display: flex;
-    align-items: center;
+  .year-row {
     margin-bottom: 8px;
   }
-  .quarter-grid {
-    display: grid;
-    grid-template-columns: repeat(52, 1fr);
-    gap: 3px;
-    flex-grow: 1;
-  }
-  .quarter-line {
-    height: 3px;
-    border-radius: 2px;
-  }
-  .q1-line { background: #e74c3c; } 
-  .q2-line { background: #f39c12; } 
-  .q3-line { background: #2ecc71; } 
-  .q4-line { background: #9b59b6; } 
 
-  .year-row { 
-    display: flex; 
-    align-items: center; 
-    margin-bottom: 10px; 
-  }
-  .year-label { 
-    font-weight: 600; 
-    width: 45px; 
-    font-size: 13px; 
-    color: #a4a4a4; 
+  /* Fixed pixel width for year/spacer labels */
+  .year-label {
+    color: #a4a4a4;
     flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    width: 50px;
   }
-  .grid { 
-    display: grid; 
-    grid-template-columns: repeat(52, 1fr); 
-    gap: 3px; 
-    flex-grow: 1; 
+
+  /* Lock grid layout columns to fixed 14px widths */
+  .month-grid, .quarter-grid, .grid {
+    display: grid;
+    gap: 3px;
+    grid-template-columns: repeat(52, 14px);
   }
-  .block { 
-    width: 100%; 
-    aspect-ratio: 1; 
-    border-radius: 2px; 
-    background: #2f2f2f; 
-    transition: transform 0.1s ease; 
-    display: flex;
+
+  .month-label {
+    color: #787774;
+    font-size: 10px;
+    font-weight: 500;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  /* Quarter Lines */
+  .quarter-line {
+    border-radius: 2px;
+    height: 3px;
+  }
+  .q1-line { background: #e74c3c; }
+  .q2-line { background: #f39c12; }
+  .q3-line { background: #2ecc71; }
+  .q4-line { background: #9b59b6; }
+
+  /* Fixed size for individual blocks */
+  .block {
     align-items: center;
-    justify-content: center;
-    font-size: 7px;
+    background: #2f2f2f;
+    border-radius: 2px;
     color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    font-size: 7px;
+    height: 14px;
+    justify-content: center;
+    transition: transform 0.1s ease;
     user-select: none;
+    width: 14px;
   }
 
-  .block.past { 
-    background: #2eaadc; 
-    color: #fff; 
+  .block.past {
+    background: #2eaadc;
+    color: #fff;
   }
 
-  .block.current { 
-    background: #2196f3 !important; 
+  .block.current {
+    background: #2196f3 !important;
+    box-shadow: 0 0 8px #2196f3;
     color: #fff !important;
     font-weight: bold;
-    transform: scale(1.3); 
-    box-shadow: 0 0 8px #2196f3; 
+    transform: scale(1.3);
     z-index: 2;
-  } 
+  }
 
-  /* Keep full sizes on mobile and allow sideways scroll */
-  @media (max-width: 768px) {
-    body {
-      padding: 8px;
-    }
+  .block:hover {
+    cursor: pointer;
+    transform: scale(1.4);
+    z-index: 3;
   }
 </style>
+</head>
+<body>
+  <div id="calendar"></div>
+
+  <script>
+    function getCurrentWeekNumber() {
+      const now = new Date();
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const pastDaysOfYear = (now - startOfYear) / 86400000;
+      return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentWeek = getCurrentWeekNumber();
+    const years = [currentYear, currentYear + 1, currentYear + 2];
+    const container = document.getElementById('calendar');
+
+    const months = [
+      { name: 'Jan', span: 4 }, { name: 'Feb', span: 4 }, { name: 'Mar', span: 5 },
+      { name: 'Apr', span: 4 }, { name: 'May', span: 4 }, { name: 'Jun', span: 5 },
+      { name: 'Jul', span: 4 }, { name: 'Aug', span: 4 }, { name: 'Sep', span: 5 },
+      { name: 'Oct', span: 4 }, { name: 'Nov', span: 4 }, { name: 'Dec', span: 4 }
+    ];
+
+    // 1. Build Month Name Header
+    const headerRow = document.createElement('div');
+    headerRow.className = 'header-row';
+
+    const spacer1 = document.createElement('div');
+    spacer1.className = 'year-label';
+    headerRow.appendChild(spacer1);
+
+    const monthGrid = document.createElement('div');
+    monthGrid.className = 'month-grid';
+
+    months.forEach(m => {
+      const mLabel = document.createElement('div');
+      mLabel.className = 'month-label';
+      mLabel.innerText = m.name;
+      mLabel.style.gridColumn = `span ${m.span}`;
+      monthGrid.appendChild(mLabel);
+    });
+
+    headerRow.appendChild(monthGrid);
+    container.appendChild(headerRow);
+
+    // 2. Build Colored Quarter Lines Below Months
+    const quarterRow = document.createElement('div');
+    quarterRow.className = 'quarter-row';
+
+    const spacer2 = document.createElement('div');
+    spacer2.className = 'year-label';
+    quarterRow.appendChild(spacer2);
+
+    const quarterGrid = document.createElement('div');
+    quarterGrid.className = 'quarter-grid';
+
+    const quarters = [
+      { span: 13, class: 'q1-line' }, // Weeks 1-13 (Q1)
+      { span: 13, class: 'q2-line' }, // Weeks 14-26 (Q2)
+      { span: 13, class: 'q3-line' }, // Weeks 27-39 (Q3)
+      { span: 13, class: 'q4-line' }  // Weeks 40-52 (Q4)
+    ];
+
+    quarters.forEach(q => {
+      const qLine = document.createElement('div');
+      qLine.className = `quarter-line ${q.class}`;
+      qLine.style.gridColumn = `span ${q.span}`;
+      quarterGrid.appendChild(qLine);
+    });
+
+    quarterRow.appendChild(quarterGrid);
+    container.appendChild(quarterRow);
+
+    // 3. Build Year Rows & Blocks
+    years.forEach((yr, index) => {
+      const row = document.createElement('div');
+      row.className = 'year-row';
+      
+      const label = document.createElement('div');
+      label.className = 'year-label';
+      label.innerText = yr;
+      row.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      for (let w = 1; w <= 52; w++) {
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.title = `${yr} - Week ${w}`;
+
+        if (index === 0) {
+          block.innerText = w;
+        }
+
+        if (yr < currentYear) {
+          block.classList.add('past');
+        } else if (yr === currentYear) {
+          if (w < currentWeek) {
+            block.classList.add('past');
+          } else if (w === currentWeek) {
+            block.classList.add('current');
+          }
+        }
+
+        grid.appendChild(block);
+      }
+      row.appendChild(grid);
+      container.appendChild(row);
+    });
+  </script>
+</body>
+</html>
