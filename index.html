@@ -1,221 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      background: #191919; 
-      color: #d4d4d4; 
-      padding: 12px; 
-      margin: 0; 
+<style>
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    background: #191919; 
+    color: #d4d4d4; 
+    padding: 12px; 
+    margin: 0; 
+    overflow-x: auto; /* Enables horizontal scroll */
+  }
+  
+  .calendar-container {
+    /* Set a fixed minimum width so 52 blocks never shrink */
+    min-width: 800px; 
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(52, 1fr);
+    gap: 3px;
+    flex-grow: 1;
+  }
+  .month-label {
+    font-size: 10px;
+    color: #787774;
+    text-align: left;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  /* Quarter Accent Line Row */
+  .quarter-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .quarter-grid {
+    display: grid;
+    grid-template-columns: repeat(52, 1fr);
+    gap: 3px;
+    flex-grow: 1;
+  }
+  .quarter-line {
+    height: 3px;
+    border-radius: 2px;
+  }
+  .q1-line { background: #e74c3c; } 
+  .q2-line { background: #f39c12; } 
+  .q3-line { background: #2ecc71; } 
+  .q4-line { background: #9b59b6; } 
+
+  .year-row { 
+    display: flex; 
+    align-items: center; 
+    margin-bottom: 10px; 
+  }
+  .year-label { 
+    font-weight: 600; 
+    width: 45px; 
+    font-size: 13px; 
+    color: #a4a4a4; 
+    flex-shrink: 0;
+  }
+  .grid { 
+    display: grid; 
+    grid-template-columns: repeat(52, 1fr); 
+    gap: 3px; 
+    flex-grow: 1; 
+  }
+  .block { 
+    width: 100%; 
+    aspect-ratio: 1; 
+    border-radius: 2px; 
+    background: #2f2f2f; 
+    transition: transform 0.1s ease; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: rgba(255, 255, 255, 0.4);
+    user-select: none;
+  }
+
+  .block.past { 
+    background: #2eaadc; 
+    color: #fff; 
+  }
+
+  .block.current { 
+    background: #2196f3 !important; 
+    color: #fff !important;
+    font-weight: bold;
+    transform: scale(1.3); 
+    box-shadow: 0 0 8px #2196f3; 
+    z-index: 2;
+  } 
+
+  /* Keep full sizes on mobile and allow sideways scroll */
+  @media (max-width: 768px) {
+    body {
+      padding: 8px;
     }
-    .header-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 2px;
-    }
-    .month-grid {
-      display: grid;
-      grid-template-columns: repeat(52, 1fr);
-      gap: 4px;
-      flex-grow: 1;
-    }
-    .month-label {
-      font-size: 10px;
-      color: #787774;
-      text-align: left;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    /* Quarter Accent Line Row */
-    .quarter-row {
-      display: flex;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .quarter-grid {
-      display: grid;
-      grid-template-columns: repeat(52, 1fr);
-      gap: 4px;
-      flex-grow: 1;
-    }
-    .quarter-line {
-      height: 3px;
-      border-radius: 2px;
-    }
-    .q1-line { background: #e74c3c; } /* Q1: Jan, Feb, Mar (Red/Coral) */
-    .q2-line { background: #f39c12; } /* Q2: Apr, May, Jun (Amber/Orange) */
-    .q3-line { background: #2ecc71; } /* Q3: Jul, Aug, Sep (Green) */
-    .q4-line { background: #9b59b6; } /* Q4: Oct, Nov, Dec (Purple) */
-
-    .year-row { 
-      display: flex; 
-      align-items: center; 
-      margin-bottom: 10px; 
-    }
-    .year-label { 
-      font-weight: 600; 
-      width: 50px; 
-      font-size: 14px; 
-      color: #a4a4a4; 
-      flex-shrink: 0;
-    }
-    .grid { 
-      display: grid; 
-      grid-template-columns: repeat(52, 1fr); 
-      gap: 4px; 
-      flex-grow: 1; 
-    }
-    .block { 
-      width: 100%; 
-      aspect-ratio: 1; 
-      border-radius: 2px; 
-      background: #2f2f2f; 
-      transition: transform 0.1s ease; 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 8px;
-      color: rgba(255, 255, 255, 0.4);
-      user-select: none;
-    }
-
-    /* Standard Completed Weeks (Blue) */
-    .block.past { 
-      background: #2eaadc; 
-      color: #fff; 
-    }
-
-    /* Current Active Week Glow */
-    .block.current { 
-      background: #2196f3 !important; 
-      color: #fff !important;
-      font-weight: bold;
-      transform: scale(1.3); 
-      box-shadow: 0 0 8px #2196f3; 
-      z-index: 2;
-    } 
-    .block:hover { 
-      transform: scale(1.4); 
-      cursor: pointer; 
-      z-index: 3;
-    }
-  </style>
-</head>
-<body>
-  <div id="calendar"></div>
-
-  <script>
-    function getCurrentWeekNumber() {
-      const now = new Date();
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      const pastDaysOfYear = (now - startOfYear) / 86400000;
-      return Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
-    }
-
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentWeek = getCurrentWeekNumber();
-    const years = [currentYear, currentYear + 1, currentYear + 2];
-    const container = document.getElementById('calendar');
-
-    const months = [
-      { name: 'Jan', span: 4 }, { name: 'Feb', span: 4 }, { name: 'Mar', span: 5 },
-      { name: 'Apr', span: 4 }, { name: 'May', span: 4 }, { name: 'Jun', span: 5 },
-      { name: 'Jul', span: 4 }, { name: 'Aug', span: 4 }, { name: 'Sep', span: 5 },
-      { name: 'Oct', span: 4 }, { name: 'Nov', span: 4 }, { name: 'Dec', span: 4 }
-    ];
-
-    // 1. Build Month Name Header
-    const headerRow = document.createElement('div');
-    headerRow.className = 'header-row';
-
-    const spacer1 = document.createElement('div');
-    spacer1.className = 'year-label';
-    headerRow.appendChild(spacer1);
-
-    const monthGrid = document.createElement('div');
-    monthGrid.className = 'month-grid';
-
-    months.forEach(m => {
-      const mLabel = document.createElement('div');
-      mLabel.className = 'month-label';
-      mLabel.innerText = m.name;
-      mLabel.style.gridColumn = `span ${m.span}`;
-      monthGrid.appendChild(mLabel);
-    });
-
-    headerRow.appendChild(monthGrid);
-    container.appendChild(headerRow);
-
-    // 2. Build Colored Quarter Lines Below Months
-    const quarterRow = document.createElement('div');
-    quarterRow.className = 'quarter-row';
-
-    const spacer2 = document.createElement('div');
-    spacer2.className = 'year-label';
-    quarterRow.appendChild(spacer2);
-
-    const quarterGrid = document.createElement('div');
-    quarterGrid.className = 'quarter-grid';
-
-    const quarters = [
-      { span: 13, class: 'q1-line' }, // Weeks 1-13 (Q1)
-      { span: 13, class: 'q2-line' }, // Weeks 14-26 (Q2)
-      { span: 13, class: 'q3-line' }, // Weeks 27-39 (Q3)
-      { span: 13, class: 'q4-line' }  // Weeks 40-52 (Q4)
-    ];
-
-    quarters.forEach(q => {
-      const qLine = document.createElement('div');
-      qLine.className = `quarter-line ${q.class}`;
-      qLine.style.gridColumn = `span ${q.span}`;
-      quarterGrid.appendChild(qLine);
-    });
-
-    quarterRow.appendChild(quarterGrid);
-    container.appendChild(quarterRow);
-
-    // 3. Build Year Rows & Blocks
-    years.forEach((yr, index) => {
-      const row = document.createElement('div');
-      row.className = 'year-row';
-      
-      const label = document.createElement('div');
-      label.className = 'year-label';
-      label.innerText = yr;
-      row.appendChild(label);
-
-      const grid = document.createElement('div');
-      grid.className = 'grid';
-
-      for (let w = 1; w <= 52; w++) {
-        const block = document.createElement('div');
-        block.className = 'block';
-        block.title = `${yr} - Week ${w}`;
-
-        if (index === 0) {
-          block.innerText = w;
-        }
-
-        if (yr < currentYear) {
-          block.classList.add('past');
-        } else if (yr === currentYear) {
-          if (w < currentWeek) {
-            block.classList.add('past');
-          } else if (w === currentWeek) {
-            block.classList.add('current');
-          }
-        }
-
-        grid.appendChild(block);
-      }
-      row.appendChild(grid);
-      container.appendChild(row);
-    });
-  </script>
-</body>
-</html>
+  }
+</style>
