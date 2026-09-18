@@ -2,107 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-<style>
-  /* Force smooth horizontal scrolling and prevent page clipping */
-  html, body {
-    background: #191919;
-    color: #d4d4d4;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    padding: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notion Weekly Grid</title>
+  <style>
+    /* Force smooth horizontal scrolling and prevent page clipping */
+    html, body {
+      background: #191919;
+      color: #d4d4d4;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
 
-  /* Lock the entire container to a fixed minimum width */
-  .calendar-container {
-    min-width: 920px;
-    width: max-content;
-  }
+    /* Lock the entire container to a fixed width based on content */
+    .calendar-container {
+      min-width: 920px;
+      width: max-content;
+    }
 
-  .header-row, .quarter-row, .year-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 4px;
-  }
+    .header-row, .quarter-row, .year-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
 
-  .year-row {
-    margin-bottom: 8px;
-  }
+    .year-row {
+      margin-bottom: 8px;
+    }
 
-  /* Fixed pixel width for year/spacer labels */
-  .year-label {
-    color: #a4a4a4;
-    flex-shrink: 0;
-    font-size: 13px;
-    font-weight: 600;
-    width: 50px;
-  }
+    /* Fixed pixel width for year/spacer labels */
+    .year-label {
+      color: #a4a4a4;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 600;
+      width: 50px;
+    }
 
-  /* Lock grid layout columns to fixed 14px widths */
-  .month-grid, .quarter-grid, .grid {
-    display: grid;
-    gap: 3px;
-    grid-template-columns: repeat(52, 14px);
-  }
+    /* Lock grid layout columns to fixed 14px widths */
+    .month-grid, .quarter-grid, .grid {
+      display: grid;
+      gap: 3px;
+      grid-template-columns: repeat(52, 14px);
+    }
 
-  .month-label {
-    color: #787774;
-    font-size: 10px;
-    font-weight: 500;
-    overflow: hidden;
-    text-align: left;
-    white-space: nowrap;
-  }
+    .month-label {
+      color: #787774;
+      font-size: 10px;
+      font-weight: 500;
+      overflow: hidden;
+      text-align: left;
+      white-space: nowrap;
+    }
 
-  /* Quarter Lines */
-  .quarter-line {
-    border-radius: 2px;
-    height: 3px;
-  }
-  .q1-line { background: #e74c3c; }
-  .q2-line { background: #f39c12; }
-  .q3-line { background: #2ecc71; }
-  .q4-line { background: #9b59b6; }
+    /* Quarter Lines */
+    .quarter-line {
+      border-radius: 2px;
+      height: 3px;
+    }
+    .q1-line { background: #e74c3c; } /* Red/Coral */
+    .q2-line { background: #f39c12; } /* Amber */
+    .q3-line { background: #2ecc71; } /* Emerald */
+    .q4-line { background: #9b59b6; } /* Purple */
 
-  /* Fixed size for individual blocks */
-  .block {
-    align-items: center;
-    background: #2f2f2f;
-    border-radius: 2px;
-    color: rgba(255, 255, 255, 0.4);
-    display: flex;
-    font-size: 7px;
-    height: 14px;
-    justify-content: center;
-    transition: transform 0.1s ease;
-    user-select: none;
-    width: 14px;
-  }
+    /* Fixed size for individual blocks */
+    .block {
+      align-items: center;
+      background: #2f2f2f;
+      border-radius: 2px;
+      color: rgba(255, 255, 255, 0.4);
+      display: flex;
+      font-size: 7px;
+      height: 14px;
+      justify-content: center;
+      transition: transform 0.1s ease;
+      user-select: none;
+      width: 14px;
+    }
 
-  .block.past {
-    background: #2eaadc;
-    color: #fff;
-  }
+    /* Completed Weeks */
+    .block.past {
+      background: #2eaadc;
+      color: #fff;
+    }
 
-  .block.current {
-    background: #2196f3 !important;
-    box-shadow: 0 0 8px #2196f3;
-    color: #fff !important;
-    font-weight: bold;
-    transform: scale(1.3);
-    z-index: 2;
-  }
+    /* Current Active Week Glow */
+    .block.current {
+      background: #2196f3 !important;
+      box-shadow: 0 0 8px #2196f3;
+      color: #fff !important;
+      font-weight: bold;
+      transform: scale(1.3);
+      z-index: 2;
+    }
 
-  .block:hover {
-    cursor: pointer;
-    transform: scale(1.4);
-    z-index: 3;
-  }
-</style>
+    .block:hover {
+      cursor: pointer;
+      transform: scale(1.4);
+      z-index: 3;
+    }
+  </style>
 </head>
 <body>
-  <div id="calendar"></div>
+  <div class="calendar-container" id="calendar"></div>
 
   <script>
     function getCurrentWeekNumber() {
@@ -125,7 +129,7 @@
       { name: 'Oct', span: 4 }, { name: 'Nov', span: 4 }, { name: 'Dec', span: 4 }
     ];
 
-    // 1. Build Month Name Header
+    // 1. Month Header
     const headerRow = document.createElement('div');
     headerRow.className = 'header-row';
 
@@ -147,7 +151,7 @@
     headerRow.appendChild(monthGrid);
     container.appendChild(headerRow);
 
-    // 2. Build Colored Quarter Lines Below Months
+    // 2. Quarter Lines
     const quarterRow = document.createElement('div');
     quarterRow.className = 'quarter-row';
 
@@ -159,10 +163,10 @@
     quarterGrid.className = 'quarter-grid';
 
     const quarters = [
-      { span: 13, class: 'q1-line' }, // Weeks 1-13 (Q1)
-      { span: 13, class: 'q2-line' }, // Weeks 14-26 (Q2)
-      { span: 13, class: 'q3-line' }, // Weeks 27-39 (Q3)
-      { span: 13, class: 'q4-line' }  // Weeks 40-52 (Q4)
+      { span: 13, class: 'q1-line' },
+      { span: 13, class: 'q2-line' },
+      { span: 13, class: 'q3-line' },
+      { span: 13, class: 'q4-line' }
     ];
 
     quarters.forEach(q => {
@@ -175,7 +179,7 @@
     quarterRow.appendChild(quarterGrid);
     container.appendChild(quarterRow);
 
-    // 3. Build Year Rows & Blocks
+    // 3. Year Rows & Blocks
     years.forEach((yr, index) => {
       const row = document.createElement('div');
       row.className = 'year-row';
