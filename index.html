@@ -1,13 +1,64 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: transparent; color: #37352f; padding: 10px; margin: 0; }
+    .year-row { display: flex; align-items: center; margin-bottom: 12px; }
+    .year-label { font-weight: 600; width: 50px; font-size: 14px; opacity: 0.8; }
+    .grid { display: grid; grid-template-columns: repeat(53, 1fr); gap: 3px; flex-grow: 1; }
+    .block { width: 100%; aspect-ratio: 1; border-radius: 2px; background: #e0e0e0; transition: transform 0.1s; }
+    .block.past { background: #2ecc71; } /* Completed week color */
+    .block.current { background: #3498db; transform: scale(1.3); box-shadow: 0 0 4px rgba(0,0,0,0.3); } /* Active week */
+    .block:hover { transform: scale(1.4); cursor: pointer; }
+  </style>
 </head>
 <body>
-    <img src='/Screenshot 2025-11-30 192935.png'></img>
-hello woorld
+  <div id="calendar"></div>
+
+  <script>
+    function getISOWeek(date) {
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentWeek = getISOWeek(now);
+    const years = [currentYear, currentYear + 1, currentYear + 2];
+    const container = document.getElementById('calendar');
+
+    years.forEach(yr => {
+      const row = document.createElement('div');
+      row.className = 'year-row';
+      
+      const label = document.createElement('div');
+      label.className = 'year-label';
+      label.innerText = yr;
+      row.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      for (let w = 1; w <= 52; w++) {
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.title = `${yr} - Week ${w}`;
+
+        if (yr < currentYear || (yr === currentYear && w < currentWeek)) {
+          block.classList.add('past');
+        } else if (yr === currentYear && w === currentWeek) {
+          block.classList.add('current');
+        }
+
+        grid.appendChild(block);
+      }
+      row.appendChild(grid);
+      container.appendChild(row);
+    });
+  </script>
 </body>
 </html>
